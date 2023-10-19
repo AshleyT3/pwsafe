@@ -795,3 +795,7 @@
 #define IDS_SCRCAP_TT_DISALLOWED_DEFAULT 6070
 #define IDS_SCRCAP_TT_ALLOWED_DBPREF    6071
 #define IDS_SCRCAP_TT_OVERRIDE_CMDLINE  6072
+#define IDS_TOTPCONFIG                  6080
+#define IDS_TOTPLENGTH                  6081
+#define IDS_TOTPTIMESTEP                6082
+#define IDS_TOTPSTARTTIME               6083
