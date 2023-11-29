@@ -155,12 +155,12 @@ DboxMain::DboxMain(PWScore &core, CWnd* pParent)
   m_bTellUserExpired(false), m_bInRename(false), m_bInAddGroup(false), 
   m_bWhitespaceRightClick(false),
   m_bWizardActive(false),
-  m_ilastaction(0),
   m_iDBIndex(0), 
   m_DBLockedIndexColour(RGB(255, 255, 0)), m_DBUnlockedIndexColour(RGB(255, 255, 0)),
   m_hMutexDBIndex(nullptr),
   m_bScreenCaptureStatusBarTimerEnabled(false),
-  m_lScrCapStatusBarBlinkRemainingMsecs(0)
+  m_lScrCapStatusBarBlinkRemainingMsecs(0),
+  m_uuidEntryTwoFactorAutoCopyToClipboard(pws_os::CUUID::NullUUID())
 {
   // Need to do the following as using the direct calls will fail for Windows versions before Vista
   m_hUser32 = HMODULE(pws_os::LoadLibrary(L"User32.dll", pws_os::loadLibraryTypes::SYS));
@@ -426,6 +426,8 @@ BEGIN_MESSAGE_MAP(DboxMain, CDialog)
   ON_COMMAND(ID_MENUITEM_EXPORTGRP2DB, OnExportGroupDB)
   ON_COMMAND(ID_MENUITEM_EXPORT_ATTACHMENT, OnExportAttachment)
   ON_COMMAND(ID_MENUITEM_EXPORTFILTERED2DB, OnExportFilteredDB)
+  ON_COMMAND(ID_MENUITEM_VIEW2FAAUTHCODE, OnViewTwoFactorAuthCode)
+  ON_COMMAND(ID_MENUITEM_COPY2FAAUTHCODE, OnCopyTwoFactorAuthCode)
 
   // View Menu
   ON_COMMAND(ID_MENUITEM_LIST_VIEW, OnListView)
@@ -631,6 +633,8 @@ const DboxMain::UICommandTableEntry DboxMain::m_UICommandTable[] = {
   {ID_MENUITEM_UNPROTECTGROUP, true, false, false, false},
   {ID_MENUITEM_COPYPASSWORD, true, true, false, false},
   {ID_MENUITEM_COPYUSERNAME, true, true, false, false},
+  {ID_MENUITEM_COPY2FAAUTHCODE, true, true, false, false},
+  {ID_MENUITEM_VIEW2FAAUTHCODE, true, true, false, false},
   {ID_MENUITEM_COPYNOTESFLD, true, true, false, false},
   {ID_MENUITEM_CLEARCLIPBOARD, true, true, true, false},
   {ID_MENUITEM_BROWSEURL, true, true, false, false},
@@ -2835,7 +2839,7 @@ void DboxMain::SetLanguage(LCID lcid)
     pci = getSelectedItem();
 
   SetDCAText(pci);
-  if (m_ilastaction != 0)
+  if (!m_ilastaction.IsNone())
     UpdateLastClipboardAction(m_ilastaction);
   else
     UpdateStatusBar();
@@ -3534,6 +3538,10 @@ int DboxMain::OnUpdateMenuToolbar(const UINT nID)
     case ID_MENUITEM_PASSWORDSUBSET:
       if (bGroupSelected)
         iEnable = FALSE;
+      break;
+    case ID_MENUITEM_COPY2FAAUTHCODE:
+    case ID_MENUITEM_VIEW2FAAUTHCODE:
+      iEnable = bGroupSelected || !pci || pci->IsFieldValueEmpty(CItemData::TWOFACTORKEY, pbci) ? FALSE : TRUE;
       break;
     // Not available if group selected or entry is not an alias/shortcut
     case ID_MENUITEM_GOTOBASEENTRY:
